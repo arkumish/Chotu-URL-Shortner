@@ -2,12 +2,14 @@ const express = require('express');
 const mongoose = require('mongoose');
 const URLSchema = require('./model');
 const bodyParser = require('body-parser');
+const path = require('path');
 const app = express();
 
-const port = 8800;
+const port = 6700;
 
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+app.use(express.static(path.join(__dirname, './public')));
 
 //Database connectivity
 const uri = 'mongodb://127.0.0.1:27017/urlShortner';
@@ -23,9 +25,7 @@ db.once('open', function () {
 
 
 
-app.all('/',(req,res)=>{
-    res.send('hello world');
-});
+
 
 app.post('/shortURL',async (req,res)=>{
   console.log(req.body);
@@ -36,7 +36,7 @@ app.post('/shortURL',async (req,res)=>{
   const obj = await newObj.save();
 
 if (obj == null) { res.status(500).send(err); }
-
+  console.log(obj);
   res.status(200).send(newObj);
   
 })
@@ -44,13 +44,16 @@ if (obj == null) { res.status(500).send(err); }
 app.get('/:url', async (req,res)=>{
 
   const urlobj = await URLSchema.findOne({ShortURL : req.params.url})
-  if( urlobj == null) return res.send(404);
+  if( urlobj == null) return res.sendStatus(404);
 
   urlobj.Click++;
   urlobj.save();
 
   res.redirect(urlobj.FullURL);
 })
+
+
+
 
 app.listen(port,()=>{
   console.log(`Listening on port ${port}`);
