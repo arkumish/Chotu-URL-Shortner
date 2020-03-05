@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const URLSchema = require('./model');
 const bodyParser = require('body-parser');
+const nanoid = require('nanoid');
 const path = require('path');
 const app = express();
 
@@ -23,28 +24,24 @@ db.once('open', function () {
 });
 
 
-
-
-
-
-app.post('/shortURL',async (req,res)=>{
+app.post('/shortURL', async (req, res) => {
   console.log(req.body);
-  let data  = {
-    FullURL : req.body.url
+  let data = {
+    FullURL: req.body.url,
+    ShortURL: nanoid(7)
   }
   const newObj = new URLSchema(data);
   const obj = await newObj.save();
 
-if (obj == null) { res.status(500).send(err); }
-  console.log(obj);
+  if (obj == null) { res.status(500).send(err); }
   res.status(200).send(newObj);
-  
+
 })
 
-app.get('/:url', async (req,res)=>{
+app.get('/:url', async (req, res) => {
 
-  const urlobj = await URLSchema.findOne({ShortURL : req.params.url})
-  if( urlobj == null) return res.sendStatus(404);
+  const urlobj = await URLSchema.findOne({ ShortURL: req.params.url })
+  if (urlobj == null) return res.sendStatus(404);
 
   urlobj.Click++;
   urlobj.save();
@@ -55,6 +52,6 @@ app.get('/:url', async (req,res)=>{
 
 
 
-app.listen(port,()=>{
+app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 })
